@@ -42,26 +42,64 @@ public extension UIScrollView {
         
         switch pullToRefresh.position {
         case .top:
-            removePullToRefresh(at: .top)
+            if let previousPullToRefresh = topPullToRefresh {
+                removePullToRefresh(previousPullToRefresh)
+            }
             
             topPullToRefresh = pullToRefresh
             originY = -view.frame.size.height
             
         case .bottom:
-            removePullToRefresh(at: .bottom)
+            if let previousPullToRefresh = bottomPullToRefresh{
+                removePullToRefresh(previousPullToRefresh)
+            }
             
             bottomPullToRefresh = pullToRefresh
             originY = contentSize.height
         }
         
         view.frame = CGRect(x: 0, y: originY, width: frame.width, height: view.frame.height)
-        
+        view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
-        sendSubview(toBack: view)
+        
+        
+        
+        let background = UIView.init()
+        background.translatesAutoresizingMaskIntoConstraints = false
+        background.backgroundColor = .white
+        
+        addSubview(background)
+        sendSubview(toBack: background)
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[pullView]-(<=1)-[backgroundView(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "backgroundView": background]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[backgroundView(1000)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["backgroundView": background]))
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[pullView]-(<=1)-[view(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "view": view]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[view(70)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["view": view]))
     }
     
-    func removePullToRefresh(at position: Position) {
-        switch position {
+    func removePullToRefresh(_ pullToRefresh: PullToRefresh) {
+        switch pullToRefresh.position {
         case .top:
             topPullToRefresh?.refreshView.removeFromSuperview()
             topPullToRefresh = nil
@@ -70,11 +108,6 @@ public extension UIScrollView {
             bottomPullToRefresh?.refreshView.removeFromSuperview()
             bottomPullToRefresh = nil
         }
-    }
-    
-    func removeAllPullToRefresh() {
-        removePullToRefresh(at: .top)
-        removePullToRefresh(at: .bottom)
     }
     
     func startRefreshing(at position: Position) {
@@ -95,10 +128,5 @@ public extension UIScrollView {
         case .bottom:
             bottomPullToRefresh?.endRefreshing()
         }
-    }
-    
-    func endAllRefreshing() {
-        endRefreshing(at: .top)
-        endRefreshing(at: .bottom)
     }
 }
