@@ -92,7 +92,7 @@ public extension UIScrollView {
             views: ["pullView": self, "view": view]))
         
         addConstraints(NSLayoutConstraint.constraints(
-            withVisualFormat: "V:[view(70)]",
+            withVisualFormat: "V:[view(60)]",
             options: .alignAllBottom,
             metrics: nil,
             views: ["view": view]))
