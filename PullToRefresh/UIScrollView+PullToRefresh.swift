@@ -33,6 +33,72 @@ public extension UIScrollView {
         }
     }
     
+    public func addPullToRefresh2(_ pullToRefresh: PullToRefresh, action: @escaping () -> ()) {
+        pullToRefresh.scrollView = self
+        pullToRefresh.action = action
+        
+        var originY: CGFloat
+        let view = pullToRefresh.refreshView
+        
+        switch pullToRefresh.position {
+        case .top:
+            if let previousPullToRefresh = topPullToRefresh {
+                removePullToRefresh(previousPullToRefresh)
+            }
+            
+            topPullToRefresh = pullToRefresh
+            originY = -view.frame.size.height
+            
+        case .bottom:
+            if let previousPullToRefresh = bottomPullToRefresh{
+                removePullToRefresh(previousPullToRefresh)
+            }
+            
+            bottomPullToRefresh = pullToRefresh
+            originY = contentSize.height
+        }
+        
+        view.frame = CGRect(x: frame.width/2, y: originY, width: frame.width, height: view.frame.height)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        
+        
+        
+        let background = UIView.init()
+        background.frame = CGRect(x: frame.width/2, y: originY, width: frame.width, height: view.frame.height)
+        background.translatesAutoresizingMaskIntoConstraints = false
+        background.backgroundColor = .white
+        
+        view.addSubview(background)
+        view.sendSubview(toBack: background)
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[backgroundView(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "backgroundView": background]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[backgroundView(1000)]|",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["backgroundView": background, "view": view]))
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[view(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "view": view]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[view(60)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["view": view]))
+    }
+    
     public func addPullToRefresh(_ pullToRefresh: PullToRefresh, action: @escaping () -> ()) {
         pullToRefresh.scrollView = self
         pullToRefresh.action = action
