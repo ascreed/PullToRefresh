@@ -17,13 +17,12 @@ open class PullToRefresh: NSObject {
     
     open var position: Position = .top
     
-    open var animationDuration: TimeInterval = 0.6
-    
+    open var animationDuration: TimeInterval = 1
     open var hideDelay: TimeInterval = 0
-    open var springDamping: CGFloat = 0.7
+    open var springDamping: CGFloat = 0.4
     open var initialSpringVelocity: CGFloat = 0.8
     open var animationOptions: UIViewAnimationOptions = [.curveLinear]
-    
+
     let refreshView: UIView
     var action: (() -> ())?
     
@@ -31,7 +30,7 @@ open class PullToRefresh: NSObject {
     fileprivate let animator: RefreshViewAnimator
     
     // MARK: - ScrollView & Observing
-    
+
     fileprivate var scrollViewDefaultInsets: UIEdgeInsets = .zero
     weak var scrollView: UIScrollView? {
         willSet {
@@ -63,7 +62,7 @@ open class PullToRefresh: NSObject {
                     scrollView?.contentInset = self.scrollViewDefaultInsets
                     state = .initial
                 }
-                
+        
             default: break
             }
         }
@@ -79,6 +78,8 @@ open class PullToRefresh: NSObject {
     
     public convenience init(height: CGFloat = 40, position: Position = .top) {
         let refreshView = DefaultRefreshView()
+        refreshView.translatesAutoresizingMaskIntoConstraints = false
+        refreshView.autoresizingMask = [.flexibleWidth]
         refreshView.frame.size.height = height
         self.init(refreshView: refreshView, animator: DefaultViewAnimator(refreshView: refreshView), height: height, position: position)
     }
@@ -88,15 +89,15 @@ open class PullToRefresh: NSObject {
     }
     
     // MARK: KVO
-    
-    fileprivate var KVOContext = "PullToRefreshKVOContext"
+
+    fileprivate static var KVOContext = "PullToRefreshKVOContext"
     fileprivate let contentOffsetKeyPath = "contentOffset"
     fileprivate let contentInsetKeyPath = "contentInset"
     fileprivate let contentSizeKeyPath = "contentSize"
     fileprivate var previousScrollViewOffset: CGPoint = CGPoint.zero
     
     override open func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if (context == &KVOContext && keyPath == contentOffsetKeyPath && object as? UIScrollView == scrollView) {
+        if (context == &PullToRefresh.KVOContext && keyPath == contentOffsetKeyPath && object as? UIScrollView == scrollView) {
             var offset: CGFloat
             switch position {
             case .top:
@@ -124,15 +125,15 @@ open class PullToRefresh: NSObject {
                 }
             default: break
             }
-        } else if (context == &KVOContext && keyPath == contentSizeKeyPath && object as? UIScrollView == scrollView) {
+        } else if (context == &PullToRefresh.KVOContext && keyPath == contentSizeKeyPath && object as? UIScrollView == scrollView) {
             if case .bottom = position {
                 refreshView.frame = CGRect(x: 0, y: scrollView!.contentSize.height, width: scrollView!.bounds.width, height: refreshView.bounds.height)
             }
-        } else if (context == &KVOContext && keyPath == contentInsetKeyPath && object as? UIScrollView == scrollView) {
+        } else if (context == &PullToRefresh.KVOContext && keyPath == contentInsetKeyPath && object as? UIScrollView == scrollView) {
             if self.state == .initial {
                 scrollViewDefaultInsets = scrollView!.contentInset
             }
-            
+          
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
@@ -145,10 +146,10 @@ open class PullToRefresh: NSObject {
             return
         }
         
-        scrollView.addObserver(self, forKeyPath: contentOffsetKeyPath, options: .initial, context: &KVOContext)
-        scrollView.addObserver(self, forKeyPath: contentSizeKeyPath, options: .initial, context: &KVOContext)
-        scrollView.addObserver(self, forKeyPath: contentInsetKeyPath, options: .new, context: &KVOContext)
-        
+        scrollView.addObserver(self, forKeyPath: contentOffsetKeyPath, options: .initial, context: &PullToRefresh.KVOContext)
+        scrollView.addObserver(self, forKeyPath: contentSizeKeyPath, options: .initial, context: &PullToRefresh.KVOContext)
+        scrollView.addObserver(self, forKeyPath: contentInsetKeyPath, options: .new, context: &PullToRefresh.KVOContext)
+      
         isObserving = true
     }
     
@@ -157,10 +158,10 @@ open class PullToRefresh: NSObject {
             return
         }
         
-        scrollView.removeObserver(self, forKeyPath: contentOffsetKeyPath, context: &KVOContext)
-        scrollView.removeObserver(self, forKeyPath: contentSizeKeyPath, context: &KVOContext)
-        scrollView.removeObserver(self, forKeyPath: contentInsetKeyPath, context: &KVOContext)
-        
+        scrollView.removeObserver(self, forKeyPath: contentOffsetKeyPath, context: &PullToRefresh.KVOContext)
+        scrollView.removeObserver(self, forKeyPath: contentSizeKeyPath, context: &PullToRefresh.KVOContext)
+        scrollView.removeObserver(self, forKeyPath: contentInsetKeyPath, context: &PullToRefresh.KVOContext)
+      
         isObserving = false
     }
 }
@@ -219,10 +220,10 @@ private extension PullToRefresh {
                     let insets = self.refreshView.frame.height + self.scrollViewDefaultInsets.bottom
                     scrollView.contentInset.bottom = insets
                 }
-        },
+            },
             completion: { _ in
                 scrollView.bounces = true
-        }
+            }
         )
         
         action?()
@@ -241,11 +242,11 @@ private extension PullToRefresh {
                 if case .top = self.position {
                     self.scrollView?.contentOffset.y = -self.scrollViewDefaultInsets.top
                 }
-        },
+            },
             completion: { _ in
                 self.addScrollViewObserving()
                 self.state = .initial
-        }
+            }
         )
     }
 }
