@@ -60,6 +60,7 @@ public extension UIScrollView {
         
         view.frame = CGRect(x: frame.width/2, y: originY, width: frame.width, height: view.frame.height)
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
         addSubview(view)
         
         
@@ -67,8 +68,8 @@ public extension UIScrollView {
         let background = UIView.init()
         background.frame = CGRect(x: frame.width/2, y: originY, width: frame.width, height: view.frame.height)
         background.translatesAutoresizingMaskIntoConstraints = false
-        background.backgroundColor = .white
-        
+        background.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+
         view.addSubview(background)
         view.sendSubview(toBack: background)
         
