@@ -128,9 +128,44 @@ public extension UIScrollView {
         }
         
         view.frame = defaultFrame(forPullToRefresh: pullToRefresh)
-        
+        view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
-        sendSubview(toBack: view)
+        
+        
+        
+        let background = UIView.init()
+        background.translatesAutoresizingMaskIntoConstraints = false
+        background.backgroundColor = .white
+        
+        addSubview(background)
+        sendSubview(toBack: background)
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[pullView]-(<=1)-[backgroundView(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "backgroundView": background]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[backgroundView(1000)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["backgroundView": background]))
+        
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "H:[pullView]-(<=1)-[view(pullView)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["pullView": self, "view": view]))
+        
+        addConstraints(NSLayoutConstraint.constraints(
+            withVisualFormat: "V:[view(60)]",
+            options: .alignAllBottom,
+            metrics: nil,
+            views: ["view": view]))
+        
     }
     
     func removePullToRefresh(at position: Position) {
